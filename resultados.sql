@@ -1,13 +1,13 @@
 -- =============================================================================
 -- TALLER: CONSULTAS Y OPTIMIZACIÓN EN POSTGRESQL CON CHINOOK
--- SCRIPT ENTREGABLE CONSOLIDADO
+-- SCRIPT ENTREGABLE CONSOLIDADO (100% COMPATIBLE CON POSTGRESQL)
 -- =============================================================================
 
 -- -----------------------------------------------------------------------------
 -- ETAPA 1: RECONOCIMIENTO Y CONTEO
 -- -----------------------------------------------------------------------------
 
--- Exploración de tablas (primeros 10 registros)
+-- Exploración de las tablas principales (primeros 10 registros)
 SELECT * FROM public."Artist" LIMIT 10;
 SELECT * FROM public."Album" LIMIT 10;
 SELECT * FROM public."Track" LIMIT 10;
@@ -15,26 +15,26 @@ SELECT * FROM public."Customer" LIMIT 10;
 SELECT * FROM public."Invoice" LIMIT 10;
 SELECT * FROM public."InvoiceLine" LIMIT 10;
 
--- Conteo de registros por tabla
-SELECT 'Artist' AS tabla, COUNT(*) AS total FROM public."Artist"
+-- Conteo total de registros por tabla (todas las tablas del esquema Chinook)
+SELECT 'Artist'        AS tabla, COUNT(*) AS total FROM public."Artist"
 UNION ALL
-SELECT 'Album', COUNT(*) FROM public."Album"
+SELECT 'Album',         COUNT(*) FROM public."Album"
 UNION ALL
-SELECT 'Track', COUNT(*) FROM public."Track"
+SELECT 'Track',         COUNT(*) FROM public."Track"
 UNION ALL
-SELECT 'Customer', COUNT(*) FROM public."Customer"
+SELECT 'Customer',      COUNT(*) FROM public."Customer"
 UNION ALL
-SELECT 'Invoice', COUNT(*) FROM public."Invoice"
+SELECT 'Invoice',       COUNT(*) FROM public."Invoice"
 UNION ALL
-SELECT 'InvoiceLine', COUNT(*) FROM public."InvoiceLine"
+SELECT 'InvoiceLine',   COUNT(*) FROM public."InvoiceLine"
 UNION ALL
-SELECT 'Genre', COUNT(*) FROM public."Genre"
+SELECT 'Genre',         COUNT(*) FROM public."Genre"
 UNION ALL
-SELECT 'MediaType', COUNT(*) FROM public."MediaType"
+SELECT 'MediaType',     COUNT(*) FROM public."MediaType"
 UNION ALL
-SELECT 'Employee', COUNT(*) FROM public."Employee"
+SELECT 'Employee',      COUNT(*) FROM public."Employee"
 UNION ALL
-SELECT 'Playlist', COUNT(*) FROM public."Playlist"
+SELECT 'Playlist',      COUNT(*) FROM public."Playlist"
 UNION ALL
 SELECT 'PlaylistTrack', COUNT(*) FROM public."PlaylistTrack";
 
@@ -42,7 +42,7 @@ SELECT 'PlaylistTrack', COUNT(*) FROM public."PlaylistTrack";
 -- ETAPA 2: CONSULTAS BÁSICAS (EJERCICIOS 1 AL 6)
 -- -----------------------------------------------------------------------------
 
--- Ejercicio 1: Filtros y ordenamiento (canciones >= 1.00)
+-- Ejercicio 1: Filtros y ordenamiento (canciones con precio >= 1.00)
 SELECT 
     "TrackId",
     "Name",
@@ -61,7 +61,7 @@ FROM public."Customer"
 WHERE "Country" IN ('Brazil', 'Canada', 'USA')
 ORDER BY "Country" ASC, "NombreCompleto" ASC;
 
--- Ejercicio 3: Búsqueda de canciones (contengan 'Love' sin importar mayúsculas)
+-- Ejercicio 3: Búsqueda de canciones (contengan 'Love', case-insensitive)
 SELECT 
     "TrackId",
     "Name",
@@ -173,7 +173,7 @@ LIMIT 5;
 -- ETAPA 4: ANÁLISIS Y OPTIMIZACIÓN (EJERCICIOS 13 AL 16)
 -- -----------------------------------------------------------------------------
 
--- Ejercicio 13: Plan inicial antes del índice
+-- Ejercicio 13: Plan inicial ANTES de crear el índice
 EXPLAIN ANALYZE
 SELECT 
     "TrackId",
@@ -182,7 +182,7 @@ SELECT
 FROM public."Track"
 WHERE "Composer" = 'Steve Harris';
 
--- Ejercicio 14: Creación de índice simple y re-evaluación
+-- Ejercicio 14: Creación de índice simple sobre Composer y re-evaluación
 CREATE INDEX IF NOT EXISTS idx_track_composer
 ON public."Track" ("Composer");
 
@@ -196,7 +196,7 @@ SELECT
 FROM public."Track"
 WHERE "Composer" = 'Steve Harris';
 
--- Ejercicio 15: Plan inicial e índice compuesto
+-- Ejercicio 15: Plan inicial e índice compuesto (GenreId + UnitPrice)
 EXPLAIN ANALYZE
 SELECT 
     "TrackId",
@@ -220,14 +220,14 @@ FROM public."Track"
 WHERE "GenreId" = 1
   AND "UnitPrice" = 0.99;
 
--- Ejercicio 16: Comparación de proyección
--- Versión A (SELECT *)
+-- Ejercicio 16: Comparación de proyección (SELECT * vs columnas específicas)
+-- Versión A: SELECT *
 EXPLAIN ANALYZE
 SELECT *
 FROM public."Track"
 WHERE "Milliseconds" > 300000;
 
--- Versión B (Solo columnas necesarias)
+-- Versión B: Solo columnas necesarias
 EXPLAIN ANALYZE
 SELECT "TrackId", "Name", "Milliseconds"
 FROM public."Track"
@@ -254,6 +254,7 @@ LIMIT 5;
 
 -- -----------------------------------------------------------------------------
 -- ANEXO: CONSULTA DE LIMPIEZA (ejecutar al finalizar la práctica)
+-- Descomenta las siguientes líneas para eliminar los índices creados
 -- -----------------------------------------------------------------------------
 
 -- DROP INDEX IF EXISTS public.idx_track_composer;
